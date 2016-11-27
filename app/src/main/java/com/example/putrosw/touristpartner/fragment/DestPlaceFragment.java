@@ -1,11 +1,14 @@
 package com.example.putrosw.touristpartner.fragment;
 
+import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -16,13 +19,25 @@ import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.Toast;
 
 import com.example.putrosw.touristpartner.R;
+import com.eyro.mesosfer.FindCallback;
+import com.eyro.mesosfer.GetCallback;
+import com.eyro.mesosfer.MesosferData;
+import com.eyro.mesosfer.MesosferException;
+import com.eyro.mesosfer.MesosferObject;
+import com.eyro.mesosfer.MesosferQuery;
+import com.eyro.mesosfer.MesosferUser;
+import com.eyro.mesosfer.SaveCallback;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -33,8 +48,13 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 
 public class DestPlaceFragment extends AppCompatActivity {
@@ -43,6 +63,22 @@ public class DestPlaceFragment extends AppCompatActivity {
     PlacesTask placesTask;
     ParserTask parserTask;
     ImageButton searchDest;
+
+    private ProgressDialog loading;
+    private AlertDialog dialog;
+    private MesosferData data;
+    String nickname;
+
+    private ListView listview;
+    //private SimpleAdapter adapter;
+    private ArrayAdapter<String> adapter;
+    private List<MesosferData> listData;
+
+    private final List<Map<String, String>> mapDataList = new ArrayList<>();
+    private List<String> searchUser = new ArrayList<>();
+    //private static final int[] to = new int[] { android.R.id.text1, android.R.id.text2 };
+    //private static final String[] from = new String[] { "id", "data" };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +109,17 @@ public class DestPlaceFragment extends AppCompatActivity {
             }
         });
 
+        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, searchUser);
+        listview = (ListView) findViewById(R.id.listview);
+        listview.setAdapter(adapter);
+
+        loading = new ProgressDialog(this);
+        loading.setIndeterminate(true);
+        loading.setCancelable(false);
+        loading.setCanceledOnTouchOutside(false);
+
+        updateAndShowDataList();
+
         searchDest = (ImageButton)findViewById(R.id.btnSearch);
         searchDest.setOnClickListener(operation);
     }
@@ -88,8 +135,76 @@ public class DestPlaceFragment extends AppCompatActivity {
     };
 
     public void handleSearchDest() {
+
+        loading.setMessage("Search Destination ...");
+        loading.show();
+
+        final String destination = atvPlaces.getText().toString();
+
+        final MesosferUser user = MesosferUser.getCurrentUser();
+        if (user != null) {
+            user.fetchAsync(new GetCallback<MesosferUser>() {
+                @Override
+                public void done(MesosferUser mesosferUser, MesosferException e) {
+                    // hide progress dialog loading
+
+                    // check if there is an exception happen
+                    if (e != null) {
+                        // setup alert dialog builder
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getBaseContext());
+                        builder.setNegativeButton(android.R.string.ok, null);
+                        builder.setTitle("Error Happen");
+                        builder.setMessage(
+                                String.format(Locale.getDefault(), "Error code: %d\nDescription: %s",
+                                        e.getCode(), e.getMessage())
+                        );
+                        return;
+                    }
+                    //updateView(user);
+                    MesosferObject dat = user.getData();
+                    if (dat != null) {
+                        nickname = dat.optString("nickname");
+                        System.out.println(nickname);
+                        if (data == null) {
+                            data = MesosferData.createData("LastPosition");
+                        }
+                        // set data
+                        System.out.println(nickname);
+                        data.setData("user", nickname);
+                        data.setData("posisi", destination);
+                        data.setData("timestamp", new Date());
+                        // execute save data
+                        data.saveAsync(new SaveCallback() {
+                            @Override
+                            public void done(MesosferException e) {
+                                // hide progress dialog loading
+                                loading.dismiss();
+
+                                AlertDialog.Builder builder = new AlertDialog.Builder(DestPlaceFragment.this);
+                                builder.setNegativeButton(android.R.string.ok, null);
+
+                                // check if there is an exception happen
+                                if (e != null) {
+                                    builder.setTitle("Error Happen");
+                                    builder.setMessage(
+                                            String.format(Locale.getDefault(), "Error code: %d\nDescription: %s",
+                                                    e.getCode(), e.getMessage())
+                                    );
+                                    dialog = builder.show();
+                                    return;
+                                }
+
+                                setResult(Activity.RESULT_OK);
+                                finish();
+                            }
+                        });
+
+                    }
+                }
+            });
+        }
+
         Intent intent = new Intent(getBaseContext(), ViewDestFragment.class);
-        String destination = atvPlaces.getText().toString();
         intent.putExtra("destination",destination);
         System.out.println(destination);
         startActivity(intent);
@@ -98,6 +213,71 @@ public class DestPlaceFragment extends AppCompatActivity {
     private void sembunyikanKeyBoard(View v){
         InputMethodManager a = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
         a.hideSoftInputFromWindow(v.getWindowToken(),0);
+    }
+
+    private void updateAndShowDataList() {
+        MesosferQuery<MesosferData> query = MesosferData.getQuery("LastPosition");
+
+        // showing a progress dialog loading
+        loading.setMessage("Load Data...");
+        loading.show();
+
+        query.findAsync(new FindCallback<MesosferData>() {
+            @Override
+            public void done(List<MesosferData> list, MesosferException e) {
+                // hide progress dialog loading
+                loading.dismiss();
+
+                // check if there is an exception happen
+                if (e != null) {
+                    // setup alert dialog builder
+                    AlertDialog.Builder builder = new AlertDialog.Builder(DestPlaceFragment.this);
+                    builder.setNegativeButton(android.R.string.ok, null);
+                    builder.setTitle("Error Happen");
+                    builder.setMessage(
+                            String.format(Locale.getDefault(), "Error code: %d\nDescription: %s",
+                                    e.getCode(), e.getMessage())
+                    );
+                    dialog = builder.show();
+                    return;
+                }
+
+                // clear all data list
+                mapDataList.clear();
+                for (MesosferData data : list) {
+                    Map<String, String> map = new HashMap<>();
+                    map.put("id", "ID : " + data.getObjectId());
+                    try {
+                        map.put("data", data.toJSON().toString(4));
+                    } catch (JSONException e1) {
+                        map.put("data", data.toJSON().toString());
+                    }
+
+                    mapDataList.add(map);
+                    String json = map.get("data");
+                    System.out.println(json);
+                    try {
+                        JSONObject jsonObject = new JSONObject(json);
+                        String temp = jsonObject.getString("posisi");
+                        System.out.println(temp);
+                        searchUser.add(temp);
+                    } catch (JSONException e1) {
+                        e1.printStackTrace();
+                    }
+                    /*try {
+                        String temp = jsonObject.getJSONObject("data").getString("posisi").toString();
+                        System.out.println(temp);
+                        searchUser.add(temp);
+                    } catch (JSONException e1) {
+                        e1.printStackTrace();
+                    }*/
+                    //String temp = map.get("data");
+                    //searchUser.add(temp);
+                }
+                Collections.reverse(searchUser);
+                adapter.notifyDataSetChanged();
+            }
+        });
     }
 
     /** A method to download json data from url */

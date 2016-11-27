@@ -43,8 +43,8 @@ public class NearDestFragment extends AppCompatActivity implements LocationListe
     Location location;
     EditText placeText;
     String type = null;
-    double latitude = -7.2819705;
-    double longitude = 112.795323;
+    double latitude = 0;
+    double longitude = 0;
     private int PROXIMITY_RADIUS = 5000;
 
     @Override
