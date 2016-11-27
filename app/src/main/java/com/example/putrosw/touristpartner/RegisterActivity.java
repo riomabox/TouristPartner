@@ -52,7 +52,6 @@ public class RegisterActivity extends AppCompatActivity {
         textPassword = (TextInputEditText) findViewById(R.id.text_password);
         textFirstname = (TextInputEditText) findViewById(R.id.text_firstname);
         textLastname = (TextInputEditText) findViewById(R.id.text_lastname);
-        textDateOfBirth = (TextInputEditText) findViewById(R.id.text_date_of_birth);
         /*textHeight = (TextInputEditText) findViewById(R.id.text_height);
         textWeight = (TextInputEditText) findViewById(R.id.text_weight);
         switchIsMarried = (Switch) findViewById(R.id.switch_is_married);*/
@@ -70,7 +69,6 @@ public class RegisterActivity extends AppCompatActivity {
         password = textPassword.getText().toString();
         firstname = textFirstname.getText().toString();
         lastname = textLastname.getText().toString();
-        dateOfBirthString = textDateOfBirth.getText().toString();
         nickname = textNickname.getText().toString();
         /*height = textHeight.getText().toString();
         weight = textWeight.getText().toString();
@@ -103,19 +101,6 @@ public class RegisterActivity extends AppCompatActivity {
             Toast.makeText(this, "Last name is empty", Toast.LENGTH_LONG).show();
             return false;
         }
-        if (TextUtils.isEmpty(dateOfBirthString)) {
-            Toast.makeText(this, "Date of birth is empty", Toast.LENGTH_LONG).show();
-            return false;
-        } else {
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-            try {
-                dateOfBirth = format.parse(dateOfBirthString);
-            } catch (ParseException e) {
-                // show error message when user input invalid format of date
-                Toast.makeText(this, "Invalid format of date of birth, use `yyyy-mm-dd`", Toast.LENGTH_LONG).show();
-                return false;
-            }
-        }
         /*if (TextUtils.isEmpty(height)) {
             Toast.makeText(this, "Height is empty", Toast.LENGTH_LONG).show();
             return false;
@@ -144,11 +129,10 @@ public class RegisterActivity extends AppCompatActivity {
         newUser.setFirstName(firstname);
         newUser.setLastName(lastname);
         // set custom field
-        newUser.setData("dateOfBirth", dateOfBirth);
         /*newUser.setData("height", Double.parseDouble(height));
         newUser.setData("weight", Integer.parseInt(weight));
         newUser.setData("isMarried", isMarried);*/
-        newUser.setData("nickname", dateOfBirth);
+        newUser.setData("nickname", nickname);
         // execute register user asynchronous
         newUser.registerAsync(new RegisterCallback() {
             @Override

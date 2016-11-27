@@ -258,9 +258,26 @@ public class DestPlaceFragment extends AppCompatActivity {
                     System.out.println(json);
                     try {
                         JSONObject jsonObject = new JSONObject(json);
-                        String temp = jsonObject.getString("posisi");
+                        final String temp = jsonObject.getString("posisi");
+                        final String nama = jsonObject.getString("user");
                         System.out.println(temp);
-                        searchUser.add(temp);
+                        System.out.println(nama);
+                        final MesosferUser user = MesosferUser.getCurrentUser();
+                        if (user != null) {
+                            user.fetchAsync(new GetCallback<MesosferUser>() {
+                                @Override
+                                public void done(MesosferUser mesosferUser, MesosferException e) {
+                                    MesosferObject dat = user.getData();
+                                    if (dat != null) {
+                                        nickname = dat.optString("nickname");
+                                        System.out.println("nickname:"+nickname);
+                                        if(nama.equals(nickname)){
+                                            searchUser.add(temp);
+                                        }
+                                    }
+                                }
+                            });
+                        }
                     } catch (JSONException e1) {
                         e1.printStackTrace();
                     }
