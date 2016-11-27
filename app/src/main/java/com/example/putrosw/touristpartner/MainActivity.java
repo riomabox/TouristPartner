@@ -48,6 +48,15 @@ public class MainActivity extends AppCompatActivity {
     private ProgressDialog loading;
     private AlertDialog dialog;
 
+    // flag for Internet connection status
+    Boolean isInternetPresent = false;
+
+    // Connection detector class
+    ConnectionDetector cd;
+
+    // Alert Dialog Manager
+    AlertDialogManager alert = new AlertDialogManager();
+
     // urls to load navigation header background image
     // and profile image
     private static final String urlNavHeaderBg = "http://api.androidhive.info/images/nav-menu-header-bg.jpg";
@@ -73,6 +82,17 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        cd = new ConnectionDetector(getApplicationContext());
+        isInternetPresent = cd.isConnectingToInternet();
+        if (!isInternetPresent) {
+            // Internet Connection is not present
+            alert.showAlertDialog(MainActivity.this, "Internet Connection Error",
+                    "Please connect to working Internet connection", false);
+            // stop executing code by return
+            return;
+        }
+
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -332,24 +352,26 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawers();
-            return;
-        }
-
-        // This code loads home fragment when back key is pressed
-        // when user is in other fragment than home
-        if (shouldLoadHomeFragOnBackPress) {
-            // checking if user is on other navigation menu
-            // rather than home
-            if (navItemIndex != 0) {
-                navItemIndex = 0;
-                CURRENT_TAG = TAG_HOME;
-                loadHomeFragment();
+        if(isInternetPresent){
+            if (drawer.isDrawerOpen(GravityCompat.START)) {
+                drawer.closeDrawers();
                 return;
             }
-        }
 
+            // This code loads home fragment when back key is pressed
+            // when user is in other fragment than home
+            if (shouldLoadHomeFragOnBackPress) {
+                // checking if user is on other navigation menu
+                // rather than home
+                if (navItemIndex != 0) {
+                    navItemIndex = 0;
+                    CURRENT_TAG = TAG_HOME;
+                    loadHomeFragment();
+                    return;
+                }
+            }
+
+        }
         super.onBackPressed();
     }
 
