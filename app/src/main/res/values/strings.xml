@@ -1,0 +1,58 @@
+<resources>
+    <string name="app_name">TouristPartner</string>
+    <string name="hint_email">Email Address</string>
+    <string name="hint_password">Password</string>
+    <string name="hint_firstname">First Name</string>
+    <string name="hint_lastname">Last Name</string>
+    <string name="register">Register</string>
+    <string name="hint_is_married">Already Married?</string>
+    <string name="hint_height">Height (cm)</string>
+    <string name="hint_weight">Weight (kg)</string>
+    <string name="hint_date_of_birth">Date of Birth (yyyy-mm-dd)</string>
+    <string name="welcome_to_mesosfer">Welcome to Mesosfer. You\'re logged in successfully.</string>
+    <string name="login">Login</string>
+    <string name="logout">Log Out</string>
+    <string name="profile">Profile</string>
+    <string name="update_profile">Update Profile</string>
+    <string name="hint_password_old">Old Password</string>
+    <string name="hint_password_new">New Password</string>
+    <string name="hint_password_confirm">Confirm New Password</string>
+    <string name="change_password">Change Password</string>
+    <string name="hint_nickname">Nick Name</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="openDrawer">open_drawer</string>
+    <string name="closeDrawer">close_drawer</string>
+
+    <!-- Navigation Drawer menu labels -->
+    <string name="nav_home">Home</string>
+    <string name="nav_photos">Photos</string>
+    <string name="nav_movies">Movies</string>
+    <string name="nav_notifications">Notifications</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_about_us">About Us</string>
+
+    <string-array name="nav_item_activity_titles">
+        <item>Home</item>
+        <item>Photos</item>
+        <item>Edit</item>
+        <item>Notifications</item>
+        <item>Settings</item>
+    </string-array>
+
+    <string name="activity_title_about_us">About Us</string>
+    <string name="activity_title_privacy_policy">Privacy Policy</string>
+    <string name="action_clear_all">Clear All</string>
+    <string name="action_logout">Logout</string>
+    <string name="action_mark_all_read">Mark All as Read</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="nav_edit">Edit</string>
+    <string name="hint_nick_name">Nick Name</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="label_btn_find">Find</string>
+    <string name="log_out">Log out</string>
+
+</resources>
